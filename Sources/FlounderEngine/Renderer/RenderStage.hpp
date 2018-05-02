@@ -8,7 +8,7 @@
 
 namespace fl
 {
-	class F_EXPORT RenderStage
+	class FL_EXPORT RenderStage
 	{
 	private:
 		uint32_t m_lastWidth;
