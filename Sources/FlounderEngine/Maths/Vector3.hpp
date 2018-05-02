@@ -2,6 +2,9 @@
 
 #include <ostream>
 #include <string>
+#ifdef FL_SIMD3
+#include <pmmintrin.h>
+#endif
 #include "Engine/Exports.hpp"
 #include "Files/LoadedValue.hpp"
 
@@ -19,14 +22,14 @@ namespace fl
 	public:
 		union
 		{
-			struct
-			{
-				float m_x, m_y, m_z;
-			};
+#ifdef FL_SIMD3
+			__m128 m_mmvalue;
+#endif
+			float m_elements[3];
 
 			struct
 			{
-				float m_elements[3];
+				float m_x, m_y, m_z;
 			};
 		};
 
@@ -53,6 +56,14 @@ namespace fl
 		/// <param name="y"> Start y. </param>
 		/// <param name="z"> Start z. </param>
 		Vector3(const float &x, const float &y, const float &z);
+
+#ifdef FL_SIMD3
+		/// <summary>
+		/// Constructor for Vector3.
+		/// </summary>
+		/// <param name="mmvalue"> The SSE value. </param>
+		Vector3(__m128 mmvalue);
+#endif
 
 		/// <summary>
 		/// Constructor for Vector3.
@@ -283,6 +294,16 @@ namespace fl
 		/// </summary>
 		/// <param name="destination"> The destination loaded value. </param>
 		void Write(LoadedValue *destination);
+
+#ifdef FL_SIMD3
+		inline void* operator new(size_t size) { return _mm_malloc(size, 16); }
+
+		inline void operator delete(void* ptr) { _mm_free(ptr); }
+#endif
+
+		const float& operator[](size_t index) const { return m_elements[index]; }
+
+		float& operator[](size_t index) { return m_elements[index]; }
 
 		Vector3 &operator=(const Vector3 &other);
 

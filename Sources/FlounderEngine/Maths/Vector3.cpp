@@ -10,6 +10,8 @@
 
 namespace fl
 {
+#define _mm_shufd(xmm, mask) _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(xmm), mask))
+
 	const Vector3 Vector3::ZERO = Vector3(0.0f, 0.0f, 0.0f);
 	const Vector3 Vector3::ONE = Vector3(1.0f, 1.0f, 1.0f);
 	const Vector3 Vector3::LEFT = Vector3(-1.0f, 0.0f, 0.0f);
@@ -22,6 +24,7 @@ namespace fl
 	const Vector3 Vector3::NEGATIVE_INFINITY = Vector3(-INFINITY, -INFINITY, -INFINITY);
 
 	Vector3::Vector3() :
+	//	m_mmvalue(_mm_setzero_ps())
 		m_x(0.0f),
 		m_y(0.0f),
 		m_z(0.0f)
@@ -29,13 +32,22 @@ namespace fl
 	}
 
 	Vector3::Vector3(const float &x, const float &y, const float &z) :
+	//	m_mmvalue(_mm_set_ps(0.0f, z, y, x))
 		m_x(x),
 		m_y(y),
 		m_z(z)
 	{
 	}
 
+#ifdef FL_SIMD3
+	Vector3::Vector3(__m128 mmvalue) :
+		m_mmvalue(mmvalue)
+	{
+	}
+#endif
+
 	Vector3::Vector3(const Vector2 &source, const float &z) :
+	//	m_mmvalue(_mm_set_ps(0.0f, z, source.m_y, source.m_x))
 		m_x(source.m_x),
 		m_y(source.m_y),
 		m_z(z)
@@ -43,6 +55,7 @@ namespace fl
 	}
 
 	Vector3::Vector3(const Vector3 &source) :
+	//	m_mmvalue(_mm_set_ps(0.0f, source.m_z, source.m_y, source.m_x))
 		m_x(source.m_x),
 		m_y(source.m_y),
 		m_z(source.m_z)
@@ -50,6 +63,7 @@ namespace fl
 	}
 
 	Vector3::Vector3(const Vector4 &source) :
+	//	m_mmvalue(_mm_set_ps(0.0f, source.m_z, source.m_y, source.m_x))
 		m_x(source.m_x),
 		m_y(source.m_y),
 		m_z(source.m_z)
@@ -57,6 +71,7 @@ namespace fl
 	}
 
 	Vector3::Vector3(const Colour &source) :
+	//	m_mmvalue(_mm_set_ps(0.0f, source.m_b, source.m_g, source.m_r))
 		m_x(source.m_r),
 		m_y(source.m_g),
 		m_z(source.m_b)
@@ -69,22 +84,38 @@ namespace fl
 
 	Vector3 Vector3::Add(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		return Vector3(_mm_add_ps(m_mmvalue, other.m_mmvalue));
+#else
 		return Vector3(m_x + other.m_x, m_y + other.m_y, m_z + other.m_z);
+#endif
 	}
 
 	Vector3 Vector3::Subtract(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		return Vector3(_mm_sub_ps(m_mmvalue, other.m_mmvalue));
+#else
 		return Vector3(m_x - other.m_x, m_y - other.m_y, m_z - other.m_z);
+#endif
 	}
 
 	Vector3 Vector3::Multiply(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		return Vector3(_mm_mul_ps(m_mmvalue, other.m_mmvalue));
+#else
 		return Vector3(m_x * other.m_x, m_y * other.m_y, m_z * other.m_z);
+#endif
 	}
 
 	Vector3 Vector3::Divide(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		return Vector3(_mm_div_ps(m_mmvalue, other.m_mmvalue));
+#else
 		return Vector3(m_x / other.m_x, m_y / other.m_y, m_z / other.m_z);
+#endif
 	}
 
 	float Vector3::Angle(const Vector3 &other) const
@@ -105,17 +136,34 @@ namespace fl
 
 	float Vector3::Dot(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		__m128 l = _mm_mul_ps(m_mmvalue, other.m_mmvalue);
+		return _mm_cvtss_f32(_mm_add_ss(l, _mm_shufd(l, 0x11)));
+#else
 		return m_x * other.m_x + m_y * other.m_y;
+#endif
 	}
 
 	Vector3 Vector3::Cross(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		__m128 lhs = _mm_mul_ps(_mm_shuffle_ps(m_mmvalue, m_mmvalue, _MM_SHUFFLE(3, 0, 2, 1)),
+			_mm_shuffle_ps(other.m_mmvalue, other.m_mmvalue, _MM_SHUFFLE(3, 1, 0, 2)));
+		__m128 rhs = _mm_mul_ps(_mm_shuffle_ps(m_mmvalue, m_mmvalue, _MM_SHUFFLE(3, 1, 0, 2)),
+			_mm_shuffle_ps(other.m_mmvalue, other.m_mmvalue, _MM_SHUFFLE(3, 0, 2, 1)));
+		return Vector3(_mm_sub_ps(lhs, rhs));
+#else
 		return Vector3(m_y * other.m_z - m_z * other.m_y, other.m_x * m_z - other.m_z * m_x, m_x * other.m_y - m_y * other.m_x);
+#endif
 	}
 
 	Vector3 Vector3::Scale(const float &scalar) const
 	{
+#ifdef FL_SIMD3
+		return Vector3(_mm_mul_ps(m_mmvalue, _mm_load_ps1(&scalar)));
+#else
 		return Vector3(m_x * scalar, m_y * scalar, m_z * scalar);
+#endif
 	}
 
 	Vector3 Vector3::Rotate(const Vector3 &rotation) const
@@ -128,24 +176,46 @@ namespace fl
 
 	Vector3 Vector3::Negate() const
 	{
+#ifdef FL_SIMD3
+		return Vector3(_mm_xor_ps(m_mmvalue, _mm_set1_ps(-0.0f)));
+#else
 		return Vector3(-m_x, -m_y, -m_z);
+#endif
 	}
 
 	Vector3 Vector3::Normalize() const
 	{
+#ifdef FL_SIMD3
+		__m128 l = _mm_mul_ps(m_mmvalue, m_mmvalue);
+		l = _mm_add_ps(l, _mm_shufd(l, 0x4E));
+		return _mm_div_ps(m_mmvalue, _mm_sqrt_ps(_mm_add_ps(l, _mm_shufd(l, 0x11))));
+#else
 		float l = Length();
 		assert(l != 0.0f && "Zero length vector!");
 		return Vector3(m_x / l, m_y / l, m_z / l);
+#endif
 	}
 
 	float Vector3::LengthSquared() const
 	{
+#ifdef FL_SIMD3
+		__m128 l = _mm_mul_ps(m_mmvalue, m_mmvalue);
+		l = _mm_add_ps(l, _mm_shufd(l, 0x4E));
+		return _mm_cvtss_f32(_mm_add_ss(l, _mm_shufd(l, 0x11)));
+#else
 		return m_x * m_x + m_y * m_y + m_z * m_z;
+#endif
 	}
 
 	float Vector3::Length() const
 	{
+#ifdef FL_SIMD3
+		__m128 l = _mm_mul_ps(m_mmvalue, m_mmvalue);
+		l = _mm_add_ps(l, _mm_shufd(l, 0x4E));
+		return _mm_cvtss_f32(_mm_sqrt_ss(_mm_add_ss(l, _mm_shufd(l, 0x11))));
+#else
 		return std::sqrt(LengthSquared());
+#endif
 	}
 
 	float Vector3::MaxComponent() const
@@ -160,23 +230,42 @@ namespace fl
 
 	float Vector3::DistanceSquared(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		__m128 d = _mm_sub_ps(m_mmvalue, other.m_mmvalue);
+		d = _mm_mul_ps(d, d);
+		d = _mm_add_ps(d, _mm_shufd(d, 0x4E));
+		return _mm_cvtss_f32(_mm_add_ss(d, _mm_shufd(d, 0x11)));
+#else
 		float dx = m_x - other.m_x;
 		float dy = m_y - other.m_y;
 		float dz = m_z - other.m_z;
 		return dx * dx + dy * dy + dz * dz;
+#endif
 	}
 
 	float Vector3::Distance(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		__m128 d = _mm_sub_ps(m_mmvalue, other.m_mmvalue);
+		d = _mm_mul_ps(d, d);
+		d = _mm_add_ps(d, _mm_shufd(d, 0x4E));
+		return _mm_cvtss_f32(_mm_sqrt_ss(_mm_add_ss(d, _mm_shufd(d, 0x11))));
+#else
 		return std::sqrt(DistanceSquared(other));
+#endif
 	}
 
 	Vector3 Vector3::DistanceVector(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		__m128 d = _mm_sub_ps(m_mmvalue, other.m_mmvalue);
+		return Vector3(_mm_mul_ps(d, d));
+#else
 		float dx = m_x - other.m_x;
 		float dy = m_y - other.m_y;
 		float dz = m_z - other.m_z;
 		return Vector3(dx * dx, dy * dy, dz * dz);
+#endif
 	}
 
 	Vector3 Vector3::SmoothDamp(const Vector3 &target, const Vector3 &rate) const
@@ -323,42 +412,62 @@ namespace fl
 
 	bool Vector3::operator==(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		return _mm_movemask_ps(_mm_cmpeq_ps(m_mmvalue, other.m_mmvalue)) == 0xF;
+#else
 		return m_x == other.m_x && m_y == other.m_x && m_z == other.m_z;
+#endif
 	}
 
 	bool Vector3::operator!=(const Vector3 &other) const
 	{
+#ifdef FL_SIMD3
+		return _mm_movemask_ps(_mm_cmpeq_ps(m_mmvalue, other.m_mmvalue)) == 0x0;
+#else
 		return !(*this == other);
+#endif
 	}
 
 	bool Vector3::operator<(const Vector3 &other) const
 	{
 		return m_x < other.m_x && m_y < other.m_y && m_z < other.m_z;
+		// TODO
 	}
 
 	bool Vector3::operator<=(const Vector3 &other) const
 	{
 		return m_x <= other.m_x && m_y <= other.m_y && m_z <= other.m_z;
+		// TODO
 	}
 
 	bool Vector3::operator>(const Vector3 &other) const
 	{
 		return m_x > other.m_x && m_y > other.m_y && m_z > other.m_z;
+		// TODO
 	}
 
 	bool Vector3::operator>=(const Vector3 &other) const
 	{
 		return m_x >= other.m_x && m_y >= other.m_y && m_z >= other.m_z;
+		// TODO
 	}
 
 	bool Vector3::operator==(const float &value) const
 	{
+#ifdef FL_SIMD3
+		return _mm_movemask_ps(_mm_cmpeq_ps(m_mmvalue, _mm_load_ps1(&value))) == 0xF;
+#else
 		return m_x == value && m_y == value && m_z == value;
+#endif
 	}
 
 	bool Vector3::operator!=(const float &value) const
 	{
+#ifdef FL_SIMD3
+		return _mm_movemask_ps(_mm_cmpeq_ps(m_mmvalue, _mm_load_ps1(&value))) == 0x0;
+#else
 		return !(*this == value);
+#endif
 	}
 
 	Vector3 Vector3::operator-()

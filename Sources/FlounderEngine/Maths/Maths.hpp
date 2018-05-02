@@ -21,7 +21,7 @@ namespace fl
 		/// <returns> The random number. </returns>
 		static float Random()
 		{
-			return static_cast<float>(rand()) / RAND_MAX;
+			return static_cast<float>(std::rand()) / RAND_MAX;
 		}
 
 		/// <summary>
@@ -32,11 +32,11 @@ namespace fl
 		/// <returns> The final random number. </returns>
 		static double LogRandom(const double &lowerLimit, const double &upperLimit)
 		{
-			const double logLower = log(lowerLimit);
-			const double logUpper = log(upperLimit);
-			const double raw = RandomInRange(0.0f, 1.0f);
+			double logLower = std::log(lowerLimit);
+			double logUpper = std::log(upperLimit);
+			double raw = RandomInRange(0.0, 1.0);
 
-			double result = exp(raw * (logUpper - logLower) + logLower);
+			double result = std::exp(raw * (logUpper - logLower) + logLower);
 
 			if (result < lowerLimit)
 			{
@@ -60,12 +60,12 @@ namespace fl
 		static float NormallyDistributedSingle(const float &standardDeviation, const float &mean)
 		{
 			// Intentionally duplicated to avoid IEnumerable overhead.
-			const double u1 = RandomInRange(0.0, 1.0);
-			const double u2 = RandomInRange(0.0, 1.0);
+			double u1 = RandomInRange(0.0, 1.0);
+			double u2 = RandomInRange(0.0, 1.0);
 
-			const double x1 = sqrt(-2.0 * log(u1));
-			const double x2 = 2.0 * PI * u2;
-			const double z1 = x1 * sin(x2); // Random normal(0,1)
+			double x1 = std::sqrt(-2.0 * std::log(u1));
+			double x2 = 2.0 * PI * u2;
+			double z1 = x1 * std::sin(x2); // Random normal(0,1)
 			return static_cast<float>(z1) * standardDeviation + mean;
 		}
 
@@ -77,7 +77,7 @@ namespace fl
 		template<typename T>
 		static T Radians(const T &degrees)
 		{
-			return degrees / 180.0f * PI;
+			return degrees / static_cast<T>(180.0) * PI;
 		}
 
 		/// <summary>
@@ -88,7 +88,7 @@ namespace fl
 		template<typename T>
 		static T Degrees(const T &radians)
 		{
-			return radians * 180.0f / PI;
+			return radians * static_cast<T>(180.0) / PI;
 		}
 
 		/// <summary>
@@ -121,8 +121,8 @@ namespace fl
 		template<typename T>
 		static T RoundToPlace(const T &value, const int &place)
 		{
-			T placeMul = static_cast<T>(pow(10, place));
-			return round(value * placeMul) / placeMul;
+			T placeMul = static_cast<T>(std::pow(10, place));
+			return std::round(value * placeMul) / placeMul;
 		}
 
 		/// <summary>
@@ -134,7 +134,7 @@ namespace fl
 		template<typename T>
 		static T Deadband(const T &min, const T &value)
 		{
-			return fabs(value) >= fabs(min) ? value : static_cast<T>(0.0);
+			return std::fabs(value) >= std::fabs(min) ? value : static_cast<T>(0.0);
 		}
 
 		/// <summary>
@@ -203,7 +203,7 @@ namespace fl
 		template<typename T>
 		static T Interpolate(const T &a, const T &b, const T &blend)
 		{
-			return (a * static_cast<T>(1.0f - blend)) + (b * blend);
+			return (a * static_cast<T>(1.0 - blend)) + (b * blend);
 		}
 
 		/// <summary>
@@ -216,9 +216,9 @@ namespace fl
 		template<typename T>
 		static T CosInterpolate(const T &a, const T &b, const T &blend)
 		{
-			const float ft = static_cast<T>(blend) * PI;
-			const float f = 1.0f - std::cos(ft) * 0.5f;
-			return (a * static_cast<T>(1.0f - f)) + (b * f);
+			T ft = static_cast<T>(blend) * PI;
+			T f = 1.0 - std::cos(ft) * 0.5;
+			return (a * static_cast<T>(1.0 - f)) + (b * f);
 		}
 
 		/// <summary>
