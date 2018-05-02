@@ -4,7 +4,7 @@ include(CMakeSources.cmake)
 set(FLOUNDERENGINE_INCLUDES "${PROJECT_SOURCE_DIR}/Sources/FlounderEngine/")
 
 add_library(FlounderEngine ${LIB_TYPE} ${FLOUNDERENGINE_SOURCES})
-add_dependencies(FlounderEngine SPIRV glfw stb)
+add_dependencies(FlounderEngine SPIRV glfw stb fastnoise)
 
 if (WIN32 AND BUILD_SHARED_LIBS)
     set_target_properties(FlounderEngine PROPERTIES PREFIX "")
@@ -20,7 +20,7 @@ else ()
             )
 endif ()
 
-target_include_directories(stb PUBLIC ${LIBRARIES_INCLUDES} ${FLOUNDERENGINE_INCLUDES})
+target_include_directories(fastnoise PUBLIC ${LIBRARIES_INCLUDES} ${FLOUNDERENGINE_INCLUDES})
 target_link_libraries(FlounderEngine PRIVATE ${LIBRARIES_LINKS})
 
 # Install

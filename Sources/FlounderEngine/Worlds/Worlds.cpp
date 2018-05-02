@@ -20,7 +20,7 @@ namespace fl
 
 	Worlds::Worlds() :
 		IModule(),
-		m_noiseTerrain(new NoiseFast(69124)),
+		m_noiseTerrain(FastNoiseSIMD::NewFastNoiseSIMD(69124)),
 		m_driverDay(new DriverLinear(0.0f, 1.0f, 300.0f)),
 		m_factorDay(0.0f),
 		m_skyboxRotation(new Vector3),
@@ -31,10 +31,10 @@ namespace fl
 		m_fog(new Fog(new Colour(), 0.001f, 2.0f, -0.1f, 0.3f)),
 		m_skyColour(new Colour("#3399ff"))
 	{
-		m_noiseTerrain->SetNoiseType(NoiseFast::PerlinFractal);
+		m_noiseTerrain->SetNoiseType(FastNoiseSIMD::PerlinFractal);
 		m_noiseTerrain->SetFrequency(0.003f);
-		m_noiseTerrain->SetInterp(NoiseFast::Quintic);
-		m_noiseTerrain->SetFractalType(NoiseFast::Fbm);
+	//	m_noiseTerrain->SetInterp(FastNoiseSIMD::Quintic);
+		m_noiseTerrain->SetFractalType(FastNoiseSIMD::FBM);
 		m_noiseTerrain->SetFractalOctaves(5);
 		m_noiseTerrain->SetFractalLacunarity(2.0);
 		m_noiseTerrain->SetFractalGain(0.5f);
@@ -130,10 +130,11 @@ namespace fl
 
 	float Worlds::GetTerrainRadius(const float &radius, const float &theta, const float &phi)
 	{
-		float height = m_noiseTerrain->GetValue(
+		/*float height = m_noiseTerrain->GetValue(
 			(radius / 10.0f) * Maths::NormalizeAngle(Maths::Degrees(theta)),
 			(radius / 10.0f) * Maths::NormalizeAngle(Maths::Degrees(phi))
 		);
-		return radius + (28.0f * height);
+		return radius + (28.0f * height);*/
+		return radius; // TODO.
 	}
 }
