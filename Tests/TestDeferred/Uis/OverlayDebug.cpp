@@ -61,8 +61,8 @@ namespace test
 					std::to_string(static_cast<int>(cameraPosition.m_z)));
 			}
 
-			m_textFps->SetString("FPS: " + std::to_string(static_cast<int>(1.0 / Engine::Get()->GetDeltaRender())));
-			m_textUps->SetString("UPS: " + std::to_string(static_cast<int>(1.0 / Engine::Get()->GetDelta())));
+			m_textFps->SetString("FPS: " + std::to_string(static_cast<int>(1.0f / Engine::Get()->GetDeltaRender())));
+			m_textUps->SetString("UPS: " + std::to_string(static_cast<int>(1.0f / Engine::Get()->GetDelta())));
 		}
 	}
 

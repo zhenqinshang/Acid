@@ -127,6 +127,7 @@ add_subdirectory(Sources)
 
 # Example Sources
 if (FLOUNDER_BUILD_TESTING)
+	add_subdirectory(Editor)
 	add_subdirectory(Tests/TestDeferred)
 	add_subdirectory(Tests/TestGuis)
 	add_subdirectory(Tests/TestMaths)
