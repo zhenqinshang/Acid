@@ -11,6 +11,7 @@ namespace acid
 		m_framebuffers(std::vector<VkFramebuffer>())
 	{
 		auto logicalDevice = Display::Get()->GetLogicalDevice();
+		auto surfaceFormat = Display::Get()->GetSurfaceFormat();
 
 		uint32_t width = renderpassCreate.GetWidth() == 0 ? Display::Get()->GetWidth() : renderpassCreate.GetWidth();
 		uint32_t height = renderpassCreate.GetHeight() == 0 ? Display::Get()->GetHeight() : renderpassCreate.GetHeight();
@@ -28,6 +29,9 @@ namespace acid
 			case ATTACHMENT_SWAPCHAIN:
 				m_imageAttachments.emplace_back(nullptr);
 				break;
+			case ATTACHMENT_RESOLVE:
+				m_imageAttachments.emplace_back(new Texture(width, height, surfaceFormat.format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT));
+				break;
 			}
 		}
 
@@ -42,6 +46,7 @@ namespace acid
 				switch (image.GetType())
 				{
 				case ATTACHMENT_IMAGE:
+				case ATTACHMENT_RESOLVE:
 					attachments.emplace_back(GetTexture(image.GetBinding())->GetImageView());
 					break;
 				case ATTACHMENT_DEPTH:

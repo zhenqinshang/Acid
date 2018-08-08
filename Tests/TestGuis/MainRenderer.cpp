@@ -11,10 +11,12 @@ namespace test
 		{
 			0, 0, // width / height
 			{
-				Attachment(1, ATTACHMENT_SWAPCHAIN) // swapchain
+				Attachment(0, ATTACHMENT_DEPTH), // depth
+				Attachment(1, ATTACHMENT_SWAPCHAIN), // swapchain
+				Attachment(2, ATTACHMENT_RESOLVE) // resolve
 			}, // images
 			{
-				SubpassType(0, {0}),
+				SubpassType(0, {2, 1}),
 			} // subpasses
 		};
 

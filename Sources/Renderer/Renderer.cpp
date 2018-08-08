@@ -110,16 +110,14 @@ namespace acid
 		float debugStart = Engine::Get()->GetTimeMs();
 #endif
 
-		const VkExtent2D displayExtent2D = {
-			static_cast<uint32_t>(Display::Get()->GetWidth()), static_cast<uint32_t>(Display::Get()->GetHeight())
-		};
+		VkExtent2D displayExtent2D = { Display::Get()->GetWidth(), Display::Get()->GetHeight() };
 
 		m_renderStages.clear();
 		m_swapchain = new Swapchain(displayExtent2D);
 
 		for (auto &renderpassCreate : renderpassCreates)
 		{
-			auto renderStage = new RenderStage(m_renderStages.size(), renderpassCreate);
+			auto renderStage = new RenderStage(static_cast<uint32_t>(m_renderStages.size()), renderpassCreate);
 			renderStage->Rebuild(m_swapchain);
 			m_renderStages.emplace_back(renderStage);
 		}
@@ -240,9 +238,7 @@ namespace acid
 		auto graphicsQueue = Display::Get()->GetGraphicsQueue();
 		auto renderStage = GetRenderStage(i);
 
-		const VkExtent2D displayExtent2D = {
-			Display::Get()->GetWidth(), Display::Get()->GetHeight()
-		};
+		VkExtent2D displayExtent2D = { Display::Get()->GetWidth(), Display::Get()->GetHeight() };
 
 		Display::CheckVk(vkQueueWaitIdle(graphicsQueue));
 

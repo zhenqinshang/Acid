@@ -12,6 +12,7 @@ namespace acid
 		ATTACHMENT_IMAGE = 0,
 		ATTACHMENT_DEPTH = 1,
 		ATTACHMENT_SWAPCHAIN = 2,
+		ATTACHMENT_RESOLVE = 3
 	};
 
 	class ACID_EXPORT Attachment

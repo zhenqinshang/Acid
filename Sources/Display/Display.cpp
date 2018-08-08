@@ -592,7 +592,7 @@ namespace acid
 
 		LogVulkanDevice(m_physicalDeviceProperties, m_physicalDeviceFeatures, m_physicalDeviceMemoryProperties);
 
-		//	m_msaaSamples = GetMaxUsableSampleCount(); // TODO: MSAA
+	//	m_msaaSamples = GetMaxUsableSampleCount(); // TODO: MSAA
 	}
 
 	VkPhysicalDevice Display::ChoosePhysicalDevice(const std::vector<VkPhysicalDevice> &devices)

@@ -30,14 +30,15 @@ namespace test
 			{
 				Attachment(0, ATTACHMENT_DEPTH), // depth
 				Attachment(1, ATTACHMENT_SWAPCHAIN), // swapchain
-				Attachment(2, ATTACHMENT_IMAGE, VK_FORMAT_R8G8B8A8_UNORM), // colours
-				Attachment(3, ATTACHMENT_IMAGE, VK_FORMAT_R16G16_UNORM), // normals
-				Attachment(4, ATTACHMENT_IMAGE, VK_FORMAT_R8G8B8A8_UNORM) // materials
+				Attachment(2, ATTACHMENT_RESOLVE), // resolve
+				Attachment(3, ATTACHMENT_IMAGE, VK_FORMAT_R8G8B8A8_UNORM), // colours
+				Attachment(4, ATTACHMENT_IMAGE, VK_FORMAT_R16G16_UNORM), // normals
+				Attachment(5, ATTACHMENT_IMAGE, VK_FORMAT_R8G8B8A8_UNORM) // materials
 			}, // images
 			{
-				SubpassType(0, {0, 2, 3, 4}),
-				SubpassType(1, {1}),
-				SubpassType(2, {1}),
+				SubpassType(0, {0, 3, 4, 5}),
+				SubpassType(1, {2}),
+				SubpassType(2, {2, 1}),
 			} // subpasses
 		};
 

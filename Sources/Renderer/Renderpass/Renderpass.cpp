@@ -34,9 +34,12 @@ namespace acid
 				attachment.format = depthStencil.GetFormat();
 				break;
 			case ATTACHMENT_SWAPCHAIN:
-				attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-				attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 				attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+				attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+				attachment.format = surfaceFormat;
+				break;
+			case ATTACHMENT_RESOLVE:
+				attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				attachment.format = surfaceFormat;
 				break;
 			}
@@ -52,22 +55,22 @@ namespace acid
 		{
 			// Attachments.
 			std::vector<VkAttachmentReference> subpassColourAttachments = {};
-			uint32_t depthAttachment = 9999;
 			uint32_t swapchainAttachment = 9999;
+			uint32_t depthAttachment = 9999;
 
 			for (auto &attachment : subpassType.GetAttachments())
 			{
+				if (renderpassCreate.GetImages().at(attachment).GetType() == ATTACHMENT_SWAPCHAIN)
+				{
+					swapchainAttachment = attachment;
+					continue;
+				}
+
 				if (renderpassCreate.GetImages().at(attachment).GetType() == ATTACHMENT_DEPTH)
 				{
 					depthAttachment = attachment;
 					continue;
 				}
-
-			//	if (renderpassCreate.GetImages().at(attachment).GetType() == ATTACHMENT_SWAPCHAIN) // TODO: MSAA
-			//	{
-			//		swapchainAttachment = attachment;
-			//		continue;
-			//	}
 
 				VkAttachmentReference attachmentReference = {};
 				attachmentReference.attachment = attachment;
@@ -81,6 +84,15 @@ namespace acid
 			subpassDescription.colorAttachmentCount = static_cast<uint32_t>(subpassColourAttachments.size());
 			subpassDescription.pColorAttachments = subpassColourAttachments.data();
 
+			if (swapchainAttachment != 9999)
+			{
+				VkAttachmentReference subpassResolveReference = {};
+				subpassResolveReference.attachment = swapchainAttachment;
+				subpassResolveReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+				subpassDescription.pResolveAttachments = &subpassResolveReference;
+			}
+
 			if (depthAttachment != 9999)
 			{
 				VkAttachmentReference subpassDepthStencilReference = {};
@@ -88,15 +100,6 @@ namespace acid
 				subpassDepthStencilReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 				subpassDescription.pDepthStencilAttachment = &subpassDepthStencilReference;
-			}
-
-			if (swapchainAttachment != 9999)
-			{
-				VkAttachmentReference colourAttachmentResolveReference = {};
-				colourAttachmentResolveReference.attachment = swapchainAttachment;
-				colourAttachmentResolveReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-				subpassDescription.pResolveAttachments = &colourAttachmentResolveReference;
 			}
 
 			subpasses.emplace_back(subpassDescription);

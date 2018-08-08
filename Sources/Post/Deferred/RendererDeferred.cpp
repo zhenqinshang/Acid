@@ -91,11 +91,11 @@ namespace acid
 
 		// Updates descriptors.
 		m_descriptorSet.Push("UboScene", &m_uniformScene);
-		m_descriptorSet.Push("writeColour", m_pipeline.GetTexture(2));
+		m_descriptorSet.Push("writeColour", m_pipeline.GetTexture(3));
 		m_descriptorSet.Push("samplerDepth", m_pipeline.GetDepthStencil());
-		m_descriptorSet.Push("samplerColour", m_pipeline.GetTexture(2));
-		m_descriptorSet.Push("samplerNormal", m_pipeline.GetTexture(3));
-		m_descriptorSet.Push("samplerMaterial", m_pipeline.GetTexture(4));
+		m_descriptorSet.Push("samplerColour", m_pipeline.GetTexture(3));
+		m_descriptorSet.Push("samplerNormal", m_pipeline.GetTexture(4));
+		m_descriptorSet.Push("samplerMaterial", m_pipeline.GetTexture(5));
 		m_descriptorSet.Push("samplerShadows", m_pipeline.GetTexture(0, 0));
 		m_descriptorSet.Push("samplerBrdf", m_brdf);
 		m_descriptorSet.Push("samplerIbl", ibl);
